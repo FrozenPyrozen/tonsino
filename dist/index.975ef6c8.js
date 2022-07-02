@@ -503,15 +503,15 @@ function hmrAcceptRun(bundle, id) {
 }
 
 },{}],"8lqZg":[function(require,module,exports) {
-var _login = require("./js/login");
-(0, _login.login)();
+var _connectWalletPage = require("./js/connectWalletPage");
+(0, _connectWalletPage.connectWalletPage)();
 
-},{"./js/login":"47T64"}],"47T64":[function(require,module,exports) {
+},{"./js/connectWalletPage":"7HEGc"}],"7HEGc":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "login", ()=>login);
-var _roulette = require("./roulette");
-const login = ()=>{
+parcelHelpers.export(exports, "connectWalletPage", ()=>connectWalletPage);
+var _gamePage = require("./gamePage");
+const connectWalletPage = ()=>{
     const rootElement = document.getElementById("root");
     const loginWrapperElement = document.createElement("div");
     loginWrapperElement.classList.add("loginWrapper");
@@ -522,12 +522,12 @@ const login = ()=>{
     loginWrapperElement.append(loginButton);
     const handleConnectWallet = ()=>{
         loginWrapperElement.remove();
-        (0, _roulette.roulette)();
+        (0, _gamePage.gamePage)();
     };
     loginButton.addEventListener("click", handleConnectWallet);
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./roulette":"9Jsv4"}],"gkKU3":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./gamePage":"hGLqZ"}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {
     return a && a.__esModule ? a : {
         default: a
@@ -557,7 +557,20 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"9Jsv4":[function(require,module,exports) {
+},{}],"hGLqZ":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "gamePage", ()=>gamePage);
+var _roulette = require("./roulette");
+const gamePage = ()=>{
+    const rootElement = document.getElementById("root");
+    const header = document.createElement("header");
+    header.classList.add("header");
+    rootElement.append(header);
+    (0, _roulette.roulette)();
+};
+
+},{"./roulette":"9Jsv4","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9Jsv4":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "roulette", ()=>roulette);
@@ -589,7 +602,7 @@ const init = async ()=>{
     const keyPairA = tonweb.utils.keyPairFromSeed(seedA); // Obtain key pair (public key and private key)
     const seedB = TonWeb.utils.base64ToBytes(generatedSeedB); // B's private (secret) key
     const keyPairB = tonweb.utils.keyPairFromSeed(seedB); // Obtain key pair (public key and private key)
-    // if you are new to cryptography then the public key is like a login, and the private key is like a password.
+    // if you are new to cryptography then the public key is like a connectWalletPage, and the private key is like a password.
     // Login can be shared with anyone, password cannot be shared with anyone.
     // With a key pair, you can create a wallet.
     // Note that this is just an object, we are not deploying anything to the blockchain yet.
@@ -830,7 +843,8 @@ const roulette = ()=>{
     ];
     let container = document.createElement("div");
     container.setAttribute("id", "container");
-    document.body.append(container);
+    const rootElement = document.getElementById("root");
+    rootElement.append(container);
     startGame();
     let wheel1 = document.getElementsByClassName("wheel")[0];
     let ballTrack1 = document.getElementsByClassName("ballTrack")[0];
@@ -19195,8 +19209,8 @@ var _hidFramingDefault = parcelHelpers.interopDefault(_hidFraming);
 var _devices = require("@ledgerhq/devices");
 var _logs = require("@ledgerhq/logs");
 var _errors = require("@ledgerhq/errors");
-var Buffer = require("buffer").Buffer;
 var global = arguments[3];
+var Buffer = require("buffer").Buffer;
 const ledgerDevices = [
     {
         vendorId: (0, _devices.ledgerUSBVendorId)

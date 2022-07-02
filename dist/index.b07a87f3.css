@@ -1,3 +1,7 @@
+body {
+  background-color: #07073f;
+}
+
 html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
   font-size: 100%;
   font: inherit;
@@ -38,11 +42,10 @@ html, body {
 }
 
 #container {
-  height: 88vh;
+  height: 470px;
   color: #fff;
-  background-color: #07073f;
   justify-content: center;
-  padding: 20px;
+  padding: 120px 20px;
   display: flex;
 }
 
@@ -851,6 +854,13 @@ html, body {
 .connectWalletButton:hover {
   transition-duration: 1s;
   transform: scale(1.03);
+}
+
+.header {
+  width: 100vw;
+  height: 10vh;
+  border-bottom: 1px solid #13cbec;
+  margin-bottom: 2vh;
 }
 
 /*# sourceMappingURL=index.b07a87f3.css.map */

@@ -35,7 +35,7 @@ const init = async () => {
     const seedB = TonWeb.utils.base64ToBytes(generatedSeedB); // B's private (secret) key
     const keyPairB = tonweb.utils.keyPairFromSeed(seedB); // Obtain key pair (public key and private key)
 
-    // if you are new to cryptography then the public key is like a login, and the private key is like a password.
+    // if you are new to cryptography then the public key is like a connectWalletPage, and the private key is like a password.
     // Login can be shared with anyone, password cannot be shared with anyone.
 
     // With a key pair, you can create a wallet.
@@ -298,7 +298,8 @@ init();
 
   let container = document.createElement('div');
   container.setAttribute('id', 'container');
-  document.body.append(container);
+    const rootElement = document.getElementById('root');
+    rootElement.append(container);
 
   startGame();
 
