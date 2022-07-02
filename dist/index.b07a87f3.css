@@ -1,3 +1,34 @@
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+
+ol, ul {
+  list-style: none;
+}
+
+blockquote, q {
+  quotes: none;
+}
+
+blockquote:before, blockquote:after, q:before, q:after {
+  content: "";
+  content: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
 html, body {
   cursor: default;
   -webkit-touch-callout: none;
@@ -7,9 +38,9 @@ html, body {
 }
 
 #container {
-  height: 470px;
+  height: 88vh;
   color: #fff;
-  background-color: #016d29;
+  background-color: #07073f;
   justify-content: center;
   padding: 20px;
   display: flex;
@@ -790,6 +821,36 @@ html, body {
 .oto_block .chip {
   margin-top: -25px;
   margin-left: 45px;
+}
+
+.loginWrapper {
+  width: 100vw;
+  height: 100vh;
+  background-color: #07073f;
+  background-image: url("https://d9hhrg4mnvzow.cloudfront.net/join.cloudbet.com/en/landing/bitcoin-bonus/4d824006-pattern-background_1000000000000000000028.png");
+  background-position: left 700px bottom 0;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.connectWalletButton {
+  width: 200px;
+  height: 50px;
+  color: #13cbec;
+  cursor: pointer;
+  background: none;
+  border: 1px solid #13cbec;
+  border-radius: 15px;
+  margin: auto;
+  padding: 10px 20px;
+  font-size: 20px;
+  position: absolute;
+  inset: 0;
+}
+
+.connectWalletButton:hover {
+  transition-duration: 1s;
+  transform: scale(1.03);
 }
 
 /*# sourceMappingURL=index.b07a87f3.css.map */
