@@ -1,5 +1,4 @@
 import { roulette } from './roulette';
-import {re} from "../../dist/index.975ef6c8";
 
 const renderGamesList = () => {
     const gamesListElement = document.createElement('ul');
