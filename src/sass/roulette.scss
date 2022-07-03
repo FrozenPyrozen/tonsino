@@ -55,13 +55,15 @@ html, body{
 .testOffchainPayments {
   height: 40px;
   border-radius: 15px;
-  background-color: black;
-  color: white;
   font-size: 18px;
   box-shadow: 3px 4px rgb(0 0 0 / 25%);
-  cursor: pointer;
   transition: .5s;
-  
+  color: #13cbec;
+  cursor: pointer;
+  background-color: #0000;
+  border: 2px solid #13cbec;
+  border-radius: 15px;
+  font-size: 20px;
 
 }
 
