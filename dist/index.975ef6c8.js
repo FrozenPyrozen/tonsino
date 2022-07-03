@@ -520,7 +520,100 @@ const BN = TonWeb.utils.BN;
 // 1 TON = 10^9 nanoton; 1 nanoton = 0.000000001 TON;
 // So 0.5 TON is 500000000 nanoton
 const toNano = TonWeb.utils.toNano;
-const init = async ()=>{
+const fromNano = TonWeb.utils.fromNano;
+function random(min, max) {
+    return min + Math.random() * (max - min);
+}
+// For improving dev speed we use global obj state
+const globalState = {};
+let globalChannelA = {};
+let globalChannelB = {};
+let globalFromWalletA = {};
+let globalFromWalletB = {};
+const closeOffchainChannel = async ()=>{
+    let channelSign;
+    let channelVerify;
+    let fromWallet;
+    const lastSignChannel = globalState.channelStateInfo.lastSignChannel;
+    const channelState = globalState.channelStateInfo.channelState;
+    console.log(`[closeOffchainChannel] channelState: `, channelState);
+    if (!lastSignChannel) throw new Error(`No lastSignChannel in closeOffchainChannel: ${lastSignChannel}`);
+    if (lastSignChannel === "A") {
+        channelSign = globalChannelA;
+        channelVerify = globalChannelB;
+        fromWallet = globalFromWalletB;
+    } else if (lastSignChannel === "B") {
+        channelSign = globalChannelB;
+        channelVerify = globalChannelA;
+        fromWallet = globalFromWalletA;
+    }
+    const signatureClose = await channelSign.signClose(channelState);
+    if (!await channelVerify.verifyClose(channelState, signatureClose)) throw new Error(`[closeOffchainChannel] invalid close signature channelVerify: ${channelVerify}`);
+    try {
+        await fromWallet.close({
+            ...channelState,
+            hisSignature: signatureClose
+        }).send(toNano("0.05"));
+        console.log("Closed succefully!");
+    } catch (error) {
+        throw new Error(`[closeOffchainChannel] error ${error}`);
+    }
+};
+const createOffchainTransfer = async (type, amount)=>{
+    if (!type) throw new Error(`No transfer type: ${type} for createOffchainTransfer!`);
+    const balanceAPrev = globalState.channelStateInfo.channelState.balanceA;
+    const balanceBPrev = globalState.channelStateInfo.channelState.balanceB;
+    let balanceANew = +fromNano(balanceAPrev);
+    let balanceBNew = +fromNano(balanceBPrev);
+    console.log("[createOffchainTransfer] +fromNano(balanceAPrev): ", balanceANew);
+    console.log("[createOffchainTransfer] +fromNano(balanceBPrev): ", balanceBNew);
+    console.log("[createOffchainTransfer]  type: ", type);
+    if (type === "userWin") {
+        // A creates new state - subtracts amount from B's balance, adds amount to A's balance, increases B's seqno by 1
+        balanceANew = +(balanceANew + amount).toFixed(10);
+        balanceBNew = +(balanceBNew - amount).toFixed(10);
+        globalState.channelStateInfo.seqnoBCounterNum += 1;
+    } else if (type === "userLoose") {
+        // A creates new state - subtracts amount from A's balance, adds amount to B's balance, increases A's seqno by 1
+        balanceANew = +(balanceANew - amount).toFixed(10);
+        balanceBNew = +(balanceBNew + amount).toFixed(10);
+        globalState.channelStateInfo.seqnoACounterNum += 1;
+    } else throw new Error(`[createOffchainTransfer] not such type for type ${type}`);
+    // console.log('balanceA = ', data.balanceA.toString())
+    // console.log('balanceB = ', data.balanceB.toString())
+    //----------------------------------------------------------------------
+    // FIRST OFFCHAIN TRANSFER - A sends 0.1 TON to B
+    console.log("[createOffchainTransfer] afterChanges balanceANew: ", balanceANew);
+    console.log("[createOffchainTransfer] afterChanges balanceBNew: ", balanceBNew);
+    const channelState = {
+        balanceA: toNano(balanceANew.toString()),
+        balanceB: toNano(balanceBNew.toString()),
+        seqnoA: new BN(globalState.channelStateInfo.seqnoACounterNum),
+        seqnoB: new BN(globalState.channelStateInfo.seqnoBCounterNum)
+    };
+    globalState.channelStateInfo.channelState = channelState;
+    // A signs this state and send signed state to B (e.g. via websocket)
+    let channelSign;
+    let channelVerify;
+    let lastSignChannel;
+    if (type === "userWin") {
+        lastSignChannel = "B";
+        channelSign = globalChannelB;
+        channelVerify = globalChannelA;
+        globalState.channelStateInfo.type = type;
+    } else if (type === "userLoose") {
+        lastSignChannel = "A";
+        channelSign = globalChannelA;
+        channelVerify = globalChannelB;
+    }
+    const signature = await channelSign.signState(channelState);
+    // A checks that the state is changed according to the rules, signs this state, send signed state to B (e.g. via websocket)
+    if (!await channelVerify.verifyState(channelState, signature)) throw new Error(`Invalid signature channelVerify: ${channelVerify} channelSign: ${channelSign}`);
+    const signatureFromVerifyer = await channelVerify.signState(channelState);
+    globalState.channelStateInfo.lastSignChannel = lastSignChannel;
+    return true;
+};
+const initPaymentChannels = async (playerBalanceForGame)=>{
     const providerUrl = "https://testnet.toncenter.com/api/v2/jsonRPC"; // TON HTTP API url. Use this url for testnet
     const apiKey = "7044e2f1f261ab0027eaab1d8131ef07becb5d07ccdcb1437a64c3e9e07364d5"; // Obtain your API key in https://t.me/tontestnetapibot
     const tonweb = new TonWeb(new TonWeb.HttpProvider(providerUrl, {
@@ -531,9 +624,16 @@ const init = async ()=>{
     // The payment channel is established between two participants A and B.
     // Each has own secret key, which he does not reveal to the other.
     // New secret key can be generated by `tonweb.utils.newSeed()`
-    // const newSeedA = Buffer.from(tonweb.utils.newSeed()).toString('base64');
-    const generatedSeedA = "549vwAXJUEyoUfSEdcmQtTmIZ8BBtA3ph8MzURK5S44=";
-    const generatedSeedB = "1+DB9/3MzOcpc1QRX5j4NgxcRx1X/QRHtAKaDuWt7zA==";
+    // const newSeedA = Buffer.from(tonweb.utils.newSeed()).toString("base64");
+    // const newSeedB = Buffer.from(tonweb.utils.newSeed()).toString("base64");
+    // console.log("newSeedA: ", newSeedA);
+    // console.log("newSeedB: ", newSeedB);
+    // Old wallet a generated on node
+    const OlDgeneratedSeedA = "549vwAXJUEyoUfSEdcmQtTmIZ8BBtA3ph8MzURK5S44=";
+    // Old wallet b generated on node
+    const OLDgeneratedSeedB = "1+DB9/3MzOcpc1QRX5j4NgxcRx1X/QRHtAKaDuWt7zA==";
+    const generatedSeedA = "P9cClZKjujYHqDNCETf+hOyUYt0/9sEFqnlgxueLuEs=";
+    const generatedSeedB = "NyFOgUIyIVX4svOFlFubOQ+SSdltOrJUdEk0hU999S4=";
     const seedA = TonWeb.utils.base64ToBytes(generatedSeedA); // A's private (secret) key
     const keyPairA = tonweb.utils.keyPairFromSeed(seedA); // Obtain key pair (public key and private key)
     const seedB = TonWeb.utils.base64ToBytes(generatedSeedB); // B's private (secret) key
@@ -547,14 +647,18 @@ const init = async ()=>{
     const walletA = tonweb.wallet.create({
         publicKey: keyPairA.publicKey
     });
+    // EQBvrU2PvfsXtFPFyQ-hlzcuTFFDKN_Mj93rHOxKAo2kk708 EQCWuxUGHF4K0-y3upHVaYsW0dRJZtRY3TbZ9mp91zbtwDz2
     const walletAddressA = await walletA.getAddress(); // address of this wallet in blockchain
     // 200 ton here
-    // walletAddressA = EQBC9N6zXcb_JW5dFb-CLg-pcnq7PYsqzfUwpwvTCeX9SLAU
+    // walletAddressA old on node EQBC9N6zXcb_JW5dFb-CLg-pcnq7PYsqzfUwpwvTCeX9SLAU
+    // walletAddressA new on node EQBvrU2PvfsXtFPFyQ-hlzcuTFFDKN_Mj93rHOxKAo2kk708
     console.log("walletAddressA = ", walletAddressA.toString(true, true, true));
     const walletB = tonweb.wallet.create({
         publicKey: keyPairB.publicKey
     });
-    // walletAddressB = EQBIfM5Xs8Mr4LBIX9kirbdkq-aWupeL-KIfYkpPCRaFo1zl
+    // 200 ton
+    // walletAddressB old on node EQBIfM5Xs8Mr4LBIX9kirbdkq-aWupeL-KIfYkpPCRaFo1zl
+    // walletAdressB new on browser EQCWuxUGHF4K0-y3upHVaYsW0dRJZtRY3TbZ9mp91zbtwDz2
     const walletAddressB = await walletB.getAddress(); // address of this wallet in blockchain
     console.log("walletAddressB = ", walletAddressB.toString(true, true, true));
     //----------------------------------------------------------------------
@@ -573,13 +677,22 @@ const init = async ()=>{
     // They share information about the payment channel ID, their public keys, their wallet addresses for withdrawing coins, initial balances.
     // They share this information off-chain, for example via a websocket.
     const channelInitState = {
+        // Mock for now for next iteration it should be playerBalanceForGame
         balanceA: toNano("1"),
+        // For now casino deposits will be hardcoded for now
         balanceB: toNano("2"),
         seqnoA: new BN(0),
-        seqnoB: new BN(0) // initially 0
+        seqnoB: new BN(0)
     };
+    globalState.channelStateInfo = {
+        seqnoACounterNum: 0,
+        seqnoBCounterNum: 0,
+        channelState: channelInitState
+    };
+    // TODO: genetate uniqid for channel in next iteration
+    const channelId = random(0, 1134);
     const channelConfig = {
-        channelId: new BN(124),
+        channelId: new BN(channelId),
         addressA: walletAddressA,
         addressB: walletAddressB,
         initBalanceA: channelInitState.balanceA,
@@ -601,6 +714,10 @@ const init = async ()=>{
         hisPublicKey: keyPairA.publicKey
     });
     if ((await channelB.getAddress()).toString() !== channelAddress.toString()) throw new Error("Channels address not same");
+    globalChannelA = channelA;
+    console.log("globalChannelA init: ", globalChannelA);
+    globalChannelB = channelB;
+    console.log("globalChannelB init: ", globalChannelB);
     // Interaction with the smart contract of the payment channel is carried out by sending messages from the wallet to it.
     // So let's create helpers for such sends.
     const fromWalletA = channelA.fromWallet({
@@ -611,6 +728,9 @@ const init = async ()=>{
         wallet: walletB,
         secretKey: keyPairB.secretKey
     });
+    globalFromWalletA = fromWalletA;
+    globalFromWalletB = fromWalletB;
+    console.log("globalFromWalletA init: ", globalFromWalletA);
     //----------------------------------------------------------------------
     // NOTE:
     // Further we will interact with the blockchain.
@@ -627,7 +747,7 @@ const init = async ()=>{
     await fromWalletA.deploy().send(toNano("0.05"));
     // To check you can use blockchain explorer https://testnet.tonscan.org/address/<CHANNEL_ADDRESS>
     // We can also call get methods on the channel (it's free) to get its current data.
-    console.log(await channelA.getChannelState());
+    console.log("Channel state: ", await channelA.getChannelState());
     const data = await channelA.getData();
     console.log("balanceA = ", data.balanceA.toString());
     console.log("balanceB = ", data.balanceB.toString());
@@ -645,72 +765,9 @@ const init = async ()=>{
     // INIT
     // After everyone has done top-up, we can initialize the channel from any wallet
     await fromWalletA.init(channelInitState).send(toNano("0.05"));
-    // to check, call the get method - `state` should change to `TonWeb.payments.PaymentChannel.STATE_OPEN`
-    //----------------------------------------------------------------------
-    // FIRST OFFCHAIN TRANSFER - A sends 0.1 TON to B
-    // A creates new state - subtracts 0.1 from A's balance, adds 0.1 to B's balance, increases A's seqno by 1
-    const channelState1 = {
-        balanceA: toNano("0.9"),
-        balanceB: toNano("2.1"),
-        seqnoA: new BN(1),
-        seqnoB: new BN(0)
-    };
-    // A signs this state and send signed state to B (e.g. via websocket)
-    const signatureA1 = await channelA.signState(channelState1);
-    // B checks that the state is changed according to the rules, signs this state, send signed state to A (e.g. via websocket)
-    if (!await channelB.verifyState(channelState1, signatureA1)) throw new Error("Invalid A signature");
-    const signatureB1 = await channelB.signState(channelState1);
-    //----------------------------------------------------------------------
-    // SECOND OFFCHAIN TRANSFER - A sends 0.2 TON to B
-    // A creates new state - subtracts 0.2 from A's balance, adds 0.2 to B's balance, increases A's seqno by 1
-    const channelState2 = {
-        balanceA: toNano("0.7"),
-        balanceB: toNano("2.3"),
-        seqnoA: new BN(2),
-        seqnoB: new BN(0)
-    };
-    // A signs this state and send signed state to B (e.g. via websocket)
-    const signatureA2 = await channelA.signState(channelState2);
-    // B checks that the state is changed according to the rules, signs this state, send signed state to A (e.g. via websocket)
-    if (!await channelB.verifyState(channelState2, signatureA2)) throw new Error("Invalid A signature");
-    const signatureB2 = await channelB.signState(channelState2);
-    //----------------------------------------------------------------------
-    // THIRD OFFCHAIN TRANSFER - B sends 1.1 TON TO A
-    // B creates new state - subtracts 1.1 from B's balance, adds 1.1 to A's balance, increases B's seqno by 1
-    const channelState3 = {
-        balanceA: toNano("1.8"),
-        balanceB: toNano("1.2"),
-        seqnoA: new BN(2),
-        seqnoB: new BN(1)
-    };
-    // B signs this state and send signed state to A (e.g. via websocket)
-    const signatureB3 = await channelB.signState(channelState3);
-    // A checks that the state is changed according to the rules, signs this state, send signed state to B (e.g. via websocket)
-    if (!await channelA.verifyState(channelState3, signatureB3)) throw new Error("Invalid B signature");
-    const signatureA3 = await channelA.signState(channelState3);
-    //----------------------------------------------------------------------
-    // So they can do this endlessly.
-    // Note that a party can make its transfers (from itself to another) asynchronously without waiting for the action of the other side.
-    // Party must increase its seqno by 1 for each of its transfers and indicate the last seqno and balance of the other party that it knows.
-    //----------------------------------------------------------------------
-    // CLOSE PAYMENT CHANNEL
-    // The parties decide to end the transfer session.
-    // If one of the parties disagrees or is not available, then the payment channel can be emergency terminated using the last signed state.
-    // That is why the parties send signed states to each other off-chain.
-    // But in our case, they do it by mutual agreement.
-    // First B signs closing message with last state, B sends it to A (e.g. via websocket)
-    const signatureCloseB = await channelB.signClose(channelState3);
-    // A verifies and signs this closing message and include B's signature
-    // A sends closing message to blockchain, payments channel smart contract
-    // Payment channel smart contract will send funds to participants according to the balances of the sent state.
-    if (!await channelA.verifyClose(channelState3, signatureCloseB)) throw new Error("Invalid B signature");
-    await fromWalletA.close({
-        ...channelState3,
-        hisSignature: signatureCloseB
-    }).send(toNano("0.05"));
+// to check, call the get method - `state` should change to `TonWeb.payments.PaymentChannel.STATE_OPEN`
 };
 const roulette = ()=>{
-    init();
     let bankValue = 1000;
     let currentBet = 0;
     let wager = 5;
@@ -736,7 +793,7 @@ const roulette = ()=>{
         30,
         32,
         34,
-        36
+        36, 
     ];
     let wheelnumbersAC = [
         0,
@@ -775,7 +832,7 @@ const roulette = ()=>{
         4,
         19,
         15,
-        32
+        32, 
     ];
     let container = document.createElement("div");
     container.setAttribute("id", "container");
@@ -797,6 +854,7 @@ const roulette = ()=>{
     function startGame() {
         buildWheel();
         buildBettingBoard();
+        initPaymentChannels();
     }
     function gameOver() {
         let notification = document.createElement("div");
@@ -857,7 +915,7 @@ const roulette = ()=>{
             12,
             35,
             3,
-            26
+            26, 
         ];
         for(i = 0; i < numbers.length; i++){
             let a = i + 1;
@@ -1107,7 +1165,7 @@ const roulette = ()=>{
             28,
             31,
             34,
-            "2 to 1"
+            "2 to 1", 
         ];
         var redBlocks = [
             1,
@@ -1127,7 +1185,7 @@ const roulette = ()=>{
             30,
             32,
             34,
-            36
+            36, 
         ];
         for(i = 0; i < numberBlocks.length; i++){
             let a = i;
@@ -1272,6 +1330,21 @@ const roulette = ()=>{
         pnBlock.append(pnContent);
         bettingBoard.append(pnBlock);
         container.append(bettingBoard);
+        let testOffchainPayments = document.createElement("button");
+        testOffchainPayments.setAttribute("class", "testOffchainPayments");
+        testOffchainPayments.innerText = "Test Ton Payments";
+        testOffchainPayments.onclick = async function() {
+            console.log("Starting testing payments: ");
+            console.log(`Starting 1st offchainTransfer type=userLoose amount=0.1 `);
+            await createOffchainTransfer("userLoose", 0.1);
+            console.log(`Starting 2st offchainTransfer type=userLoose amount=0.2 `);
+            await createOffchainTransfer("userLoose", 0.2);
+            console.log(`Starting 3st offchainTransfer type=userWin amount=1.1 `);
+            await createOffchainTransfer("userWin", 1.1);
+            console.log(`Closing Offchain Channel`);
+            await closeOffchainChannel();
+        };
+        container.append(testOffchainPayments);
     }
     function clearBet() {
         bet1 = [];
@@ -1361,6 +1434,8 @@ const roulette = ()=>{
     }
     function win(winningSpin, winValue, betTotal) {
         if (winValue > 0) {
+            const totalWin = winValue + betTotal;
+            console.log("totalWin: ", totalWin);
             let notification = document.createElement("div");
             notification.setAttribute("id", "notification");
             let nSpan = document.createElement("div");
@@ -1387,7 +1462,7 @@ const roulette = ()=>{
             nsWin.append(nsWinBlock);
             nsWinBlock = document.createElement("div");
             nsWinBlock.setAttribute("class", "nsWinBlock");
-            nsWinBlock.innerText = "Payout: " + (winValue + betTotal);
+            nsWinBlock.innerText = "Payout: " + totalWin;
             nsWin.append(nsWinBlock);
             nSpan.append(nsWin);
             notification.append(nSpan);

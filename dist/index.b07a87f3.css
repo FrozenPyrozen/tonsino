@@ -50,6 +50,17 @@ html, body {
   box-shadow: 3px 4px #00000040;
 }
 
+.testOffchainPayments {
+  height: 40px;
+  color: #fff;
+  cursor: pointer;
+  background-color: #000;
+  border-radius: 15px;
+  font-size: 18px;
+  transition: all .5s;
+  box-shadow: 3px 4px #00000040;
+}
+
 .nBtn:active {
   top: 118px;
   left: calc(25% + 2px);
