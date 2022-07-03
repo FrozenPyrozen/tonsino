@@ -53,6 +53,18 @@ html, body{
   cursor: pointer;
   transition: .5s;
 }
+.testOffchainPayments {
+  height: 40px;
+  border-radius: 15px;
+  background-color: black;
+  color: white;
+  font-size: 18px;
+  box-shadow: 3px 4px rgb(0 0 0 / 25%);
+  cursor: pointer;
+  transition: .5s;
+  
+
+}
 
 .nBtn:active{
   top: 118px;
