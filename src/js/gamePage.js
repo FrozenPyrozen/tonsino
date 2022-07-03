@@ -23,7 +23,7 @@ const renderFinishGameButton = () => {
     finishGameBtnElement.classList.add('finishGameBtn');
 
     const handleFinishGame = () => {
-        alert('Game Finished')
+        console.log('Game Finished')
     }
 
     finishGameBtnElement.addEventListener('click', handleFinishGame)
