@@ -438,7 +438,7 @@ export const roulette = () => {
       0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5,
       24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26,
     ];
-    for (i = 0; i < numbers.length; i++) {
+    for (let i = 0; i < numbers.length; i++) {
       let a = i + 1;
       let spanClass = numbers[i] < 10 ? "single" : "double";
       let sect = document.createElement("div");
@@ -500,7 +500,7 @@ export const roulette = () => {
     var wlttb = document.createElement("div");
     wlttb.setAttribute("id", "wlttb_top");
     wlttb.setAttribute("class", "wlttb");
-    for (i = 0; i < 11; i++) {
+    for (let i = 0; i < 11; i++) {
       let j = i;
       var ttbbetblock = document.createElement("div");
       ttbbetblock.setAttribute("class", "ttbbetblock");
@@ -534,12 +534,12 @@ export const roulette = () => {
     }
     wl.append(wlttb);
 
-    for (c = 1; c < 4; c++) {
+    for (let c = 1; c < 4; c++) {
       let d = c;
       var wlttb = document.createElement("div");
       wlttb.setAttribute("id", "wlttb_" + c);
       wlttb.setAttribute("class", "wlttb");
-      for (i = 0; i < 12; i++) {
+      for (let i = 0; i < 12; i++) {
         let j = i;
         var ttbbetblock = document.createElement("div");
         ttbbetblock.setAttribute("class", "ttbbetblock");
@@ -579,12 +579,12 @@ export const roulette = () => {
       wl.append(wlttb);
     }
 
-    for (c = 1; c < 12; c++) {
+    for (let c = 1; c < 12; c++) {
       let d = c;
       var wlrtl = document.createElement("div");
       wlrtl.setAttribute("id", "wlrtl_" + c);
       wlrtl.setAttribute("class", "wlrtl");
-      for (i = 1; i < 4; i++) {
+      for (let i = 1; i < 4; i++) {
         let j = i;
         var rtlbb = document.createElement("div");
         rtlbb.setAttribute("class", "rtlbb" + i);
@@ -603,11 +603,11 @@ export const roulette = () => {
       wl.append(wlrtl);
     }
 
-    for (c = 1; c < 3; c++) {
+    for (let c = 1; c < 3; c++) {
       var wlcb = document.createElement("div");
       wlcb.setAttribute("id", "wlcb_" + c);
       wlcb.setAttribute("class", "wlcb");
-      for (i = 1; i < 12; i++) {
+      for (let i = 1; i < 12; i++) {
         let count = c == 1 ? i : i + 11;
         var cbbb = document.createElement("div");
         cbbb.setAttribute("id", "cbbb_" + count);
@@ -653,7 +653,7 @@ export const roulette = () => {
     let bbtop = document.createElement("div");
     bbtop.setAttribute("class", "bbtop");
     let bbtopBlocks = ["1 to 18", "19 to 36"];
-    for (i = 0; i < bbtopBlocks.length; i++) {
+    for (let i = 0; i < bbtopBlocks.length; i++) {
       let f = i;
       var bbtoptwo = document.createElement("div");
       bbtoptwo.setAttribute("class", "bbtoptwo");
@@ -738,7 +738,7 @@ export const roulette = () => {
     var redBlocks = [
       1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36,
     ];
-    for (i = 0; i < numberBlocks.length; i++) {
+    for (let i = 0; i < numberBlocks.length; i++) {
       let a = i;
       var nbClass = numberBlocks[i] == "2 to 1" ? "tt1_block" : "number_block";
       var colourClass = redBlocks.includes(numberBlocks[i])
@@ -752,7 +752,7 @@ export const roulette = () => {
         if (numberBlocks[a] != "2 to 1") {
           setBet(this, "" + numberBlocks[a] + "", "inside_whole", 35);
         } else {
-          num =
+          let num =
             a == 12
               ? "3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36"
               : a == 25
@@ -766,7 +766,7 @@ export const roulette = () => {
         if (numberBlocks[a] != "2 to 1") {
           removeBet(this, "" + numberBlocks[a] + "", "inside_whole", 35);
         } else {
-          num =
+          let num =
             a == 12
               ? "3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36"
               : a == 25
@@ -786,12 +786,12 @@ export const roulette = () => {
     let bo3Board = document.createElement("div");
     bo3Board.setAttribute("class", "bo3_board");
     let bo3Blocks = ["1 to 12", "13 to 24", "25 to 36"];
-    for (i = 0; i < bo3Blocks.length; i++) {
+    for (let i = 0; i < bo3Blocks.length; i++) {
       let b = i;
       var bo3Block = document.createElement("div");
       bo3Block.setAttribute("class", "bo3_block");
       bo3Block.onclick = function () {
-        num =
+        let num =
           b == 0
             ? "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12"
             : b == 1
@@ -801,7 +801,7 @@ export const roulette = () => {
       };
       bo3Block.oncontextmenu = function (e) {
         e.preventDefault();
-        num =
+        let num =
           b == 0
             ? "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12"
             : b == 1
@@ -817,7 +817,7 @@ export const roulette = () => {
     let otoBoard = document.createElement("div");
     otoBoard.setAttribute("class", "oto_board");
     let otoBlocks = ["EVEN", "RED", "BLACK", "ODD"];
-    for (i = 0; i < otoBlocks.length; i++) {
+    for (let i = 0; i < otoBlocks.length; i++) {
       let d = i;
       var colourClass =
         otoBlocks[i] == "RED"
@@ -828,7 +828,7 @@ export const roulette = () => {
       var otoBlock = document.createElement("div");
       otoBlock.setAttribute("class", "oto_block" + colourClass);
       otoBlock.onclick = function () {
-        num =
+        let num =
           d == 0
             ? "2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36"
             : d == 1
@@ -839,7 +839,7 @@ export const roulette = () => {
         setBet(this, num, "outside_oerb", 1);
       };
       otoBlock.oncontextmenu = function (e) {
-        num =
+        let num =
           d == 0
             ? "2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36"
             : d == 1
@@ -858,7 +858,7 @@ export const roulette = () => {
     let chipDeck = document.createElement("div");
     chipDeck.setAttribute("class", "chipDeck");
     let chipValues = [1, 5, 10, 100, "clear"];
-    for (i = 0; i < chipValues.length; i++) {
+    for (let i = 0; i < chipValues.length; i++) {
       let cvi = i;
       let chipColour =
         i == 0
@@ -980,7 +980,7 @@ export const roulette = () => {
         "" + bankValue.toLocaleString("en-GB") + "";
       document.getElementById("betSpan").innerText =
         "" + currentBet.toLocaleString("en-GB") + "";
-      for (i = 0; i < bet.length; i++) {
+      for (let i = 0; i < bet.length; i++) {
         if (bet[i].numbers == n && bet[i].type == t) {
           bet[i].amt = bet[i].amt + wager;
           let chipColour =
@@ -1007,7 +1007,7 @@ export const roulette = () => {
       bet.push(obj);
 
       let numArray = n.split(",").map(Number);
-      for (i = 0; i < numArray.length; i++) {
+      for (let i = 0; i < numArray.length; i++) {
         if (!numbersBet.includes(numArray[i])) {
           numbersBet.push(numArray[i]);
         }
@@ -1040,7 +1040,7 @@ export const roulette = () => {
       if (numbersBet.includes(winningSpin)) {
         let winValue = 0;
         let betTotal = 0;
-        for (i = 0; i < bet.length; i++) {
+        for (let i = 0; i < bet.length; i++) {
           var numArray = bet[i].numbers.split(",").map(Number);
           if (numArray.includes(winningSpin)) {
             bankValue = bankValue + bet[i].odds * bet[i].amt + bet[i].amt;
@@ -1128,7 +1128,7 @@ export const roulette = () => {
 
   function removeBet(e, n, t, o) {
     wager = wager == 0 ? 100 : wager;
-    for (i = 0; i < bet.length; i++) {
+    for (let i = 0; i < bet.length; i++) {
       if (bet[i].numbers == n && bet[i].type == t) {
         if (bet[i].amt != 0) {
           wager = bet[i].amt > wager ? wager : bet[i].amt;
@@ -1167,7 +1167,7 @@ export const roulette = () => {
   }
 
   function spinWheel(winningSpin) {
-    for (i = 0; i < wheelnumbersAC.length; i++) {
+    for (let i = 0; i < wheelnumbersAC.length; i++) {
       if (wheelnumbersAC[i] == winningSpin) {
         var degree = i * 9.73 + 362;
       }
@@ -1175,6 +1175,7 @@ export const roulette = () => {
     wheel.style.cssText = "animation: wheelRotate 5s linear infinite;";
     ballTrack.style.cssText = "animation: ballRotate 1s linear infinite;";
 
+    let style;
     setTimeout(function () {
       ballTrack.style.cssText = "animation: ballRotate 2s linear infinite;";
       style = document.createElement("style");
@@ -1200,7 +1201,7 @@ export const roulette = () => {
   function removeChips() {
     var chips = document.getElementsByClassName("chip");
     if (chips.length > 0) {
-      for (i = 0; i < chips.length; i++) {
+      for (let i = 0; i < chips.length; i++) {
         chips[i].remove();
       }
       removeChips();
