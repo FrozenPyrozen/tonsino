@@ -1,3 +1,3 @@
-import { roulette } from './js/roulette';
+import { connectWalletPage } from './js/connectWalletPage';
 
-roulette();
+connectWalletPage();

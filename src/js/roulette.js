@@ -377,9 +377,10 @@ export const roulette = () => {
     23, 8, 30, 11, 36, 13, 27, 6, 34, 17, 25, 2, 21, 4, 19, 15, 32,
   ];
 
-  let container = document.createElement("div");
-  container.setAttribute("id", "container");
-  document.body.append(container);
+  let container = document.createElement('div');
+  container.setAttribute('id', 'container');
+    const rootElement = document.getElementById('root');
+    rootElement.append(container);
 
   startGame();
 
