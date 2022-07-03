@@ -257,7 +257,7 @@ const initPaymentChannels = async (playerBalanceForGame) => {
   // TODO: genetate uniqid for channel in next iteration
   const channelId = random(0,1134);
   const channelConfig = {
-    channelId: new BN(channelId), // Channel ID, for each new channel there must be a new ID
+    channelId: new BN(124), // Channel ID, for each new channel there must be a new ID
     addressA: walletAddressA, // A's funds will be withdrawn to this wallet address after the channel is closed
     addressB: walletAddressB, // B's funds will be withdrawn to this wallet address after the channel is closed
     initBalanceA: channelInitState.balanceA,
@@ -332,11 +332,14 @@ const initPaymentChannels = async (playerBalanceForGame) => {
   // To check you can use blockchain explorer https://testnet.tonscan.org/address/<CHANNEL_ADDRESS>
   // We can also call get methods on the channel (it's free) to get its current data.
 
-  console.log("Channel state: ", await channelA.getChannelState());
+  try {
+    console.log("Channel state: ", await channelA.getChannelState());
+  } catch (err) {
+    throw new Error('[Channel state error]: ', err);
+  }
   const data = await channelA.getData();
   console.log("balanceA = ", data.balanceA.toString());
   console.log("balanceB = ", data.balanceB.toString());
-
   // TOP UP
 
   // Now each parties must send their initial balance from the wallet to the channel contract.
