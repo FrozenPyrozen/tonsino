@@ -257,7 +257,7 @@ const initPaymentChannels = async (playerBalanceForGame) => {
   // TODO: genetate uniqid for channel in next iteration
   const channelId = random(0,1134);
   const channelConfig = {
-    channelId: new BN(124), // Channel ID, for each new channel there must be a new ID
+    channelId: new BN(channelId), // Channel ID, for each new channel there must be a new ID
     addressA: walletAddressA, // A's funds will be withdrawn to this wallet address after the channel is closed
     addressB: walletAddressB, // B's funds will be withdrawn to this wallet address after the channel is closed
     initBalanceA: channelInitState.balanceA,
